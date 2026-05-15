@@ -66,17 +66,25 @@ Returns `{ "status": "ok" }`.
 ## Project Structure
 
 ```
-src/
-├── api/            Routes and controllers
-│   └── routes/
-│       ├── ingest.ts   Batch ingestion endpoint
-│       └── query.ts    AI-powered query endpoint
-├── db/             ClickHouse client and migrations
-│   ├── client.ts
-│   └── migrations/
-├── services/       Core logic
-│   ├── BatchIngester.ts   Memory buffer + periodic flush
-│   └── AnalyticAgent.ts   Text-to-SQL via OpenAI
-└── types/          TypeScript interfaces
-    └── log.ts
+.
+├── app/                    Python FastAPI Backend
+│   ├── ai/                 AI query planner and prompt logic
+│   ├── analytics/          SQL builder and validation
+│   ├── api/                FastAPI routes (ingest, query, health)
+│   ├── core/               Config and utilities
+│   ├── db/                 ClickHouse client and initialization
+│   ├── ingestion/          Background task worker and buffering
+│   ├── schemas/            Pydantic validation models
+│   └── main.py             FastAPI application entry point
+│
+└── frontend/               React Vite Frontend
+    └── src/
+        ├── components/     Reusable UI & Layout components
+        ├── lib/            Utility functions
+        ├── pages/          React Router view pages
+        ├── services/       API client (Axios)
+        ├── store/          Global Zustand state
+        ├── types/          TypeScript interfaces
+        ├── App.tsx         Router and providers
+        └── main.tsx        React entry point
 ```
