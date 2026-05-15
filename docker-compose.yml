@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  sentient-clickhouse:
+    image: clickhouse/clickhouse-server:24.12
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: sentient_log
+      CLICKHOUSE_USER: sentient
+      CLICKHOUSE_PASSWORD: strongpassword123
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - sentient-log_ch_data:/var/lib/clickhouse
+      - sentient-log_ch_logs:/var/log/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  sentient-api:
+    build: .
+    ports:
+      - "3100:3100"
+    environment:
+      - CLICKHOUSE_URL=sentient-clickhouse
+      - CLICKHOUSE_PORT=8123
+      - CLICKHOUSE_USER=sentient
+      - CLICKHOUSE_PASSWORD=strongpassword123
+      - CLICKHOUSE_DATABASE=sentient_log
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-""}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-"https://api.groq.com/openai/v1"}
+      - OPENAI_MODEL=${OPENAI_MODEL:-"llama-3.3-70b-versatile"}
+    depends_on:
+      sentient-clickhouse:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  sentient-log_ch_data:
+  sentient-log_ch_logs:
